@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <title>Job Riset & Casting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: rgb(228,185,211); font-family: 'Nunito', Arial, sans-serif; min-height: 100vh; }
+
+    .header {
+      background: linear-gradient(135deg, #f4a7c0, #e87fa5);
+      text-align: center; padding: 32px 16px 24px;
+      border-bottom: 2px solid #e87fa5;
+      position: relative; overflow: hidden;
+    }
+    .header::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+    .header::after { content: ''; position: absolute; bottom: -20px; left: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+    .header-icon { font-size: 2rem; margin-bottom: 6px; display: block; }
+    .header h1 { color: white; font-size: 1.5rem; font-weight: 900; margin: 0; }
+    .header p { color: rgba(255,255,255,0.9); font-size: 0.78rem; margin-top: 5px; font-weight: 600; }
+
+    .job-count {
+      background: rgba(255,255,255,0.2);
+      color: white; font-size: 0.7rem; font-weight: 800;
+      padding: 4px 12px; border-radius: 20px;
+      display: inline-block; margin-top: 8px;
+    }
+
+    .content { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 32px; }
+
+    .section-label {
+      font-size: 0.72rem; font-weight: 800; color: #c2607a;
+      margin-bottom: 12px; margin-top: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1.5px;
+      background: linear-gradient(to right, #f4d0dc, transparent);
+    }
+
+    .card {
+      background: white; border: 1.5px solid #f4d0dc;
+      border-radius: 20px; padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 16px rgba(244,114,182,0.1);
+    }
+
+    .card-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 10px;
+    }
+
+    .card-title { font-size: 0.95rem; font-weight: 900; color: #c2607a; flex: 1; line-height: 1.4; }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #d1fae5; color: #065f46;
+      font-size: 0.6rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 20px;
+      border: 1px solid #6ee7b7; flex-shrink: 0; margin-left: 8px;
+    }
+
+    .divider-line { height: 1px; background: #f4e8ee; margin: 10px 0; }
+
+    .detail-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 5px 0; font-size: 0.76rem; color: #5a3d48;
+      font-weight: 700; line-height: 1.6;
+      border-bottom: 1px dashed #f4e8ee;
+    }
+    .detail-item:last-child { border-bottom: none; }
+    .detail-icon { flex-shrink: 0; width: 18px; }
+
+    .fee-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      color: #065f46; font-size: 0.82rem; font-weight: 900;
+      padding: 6px 14px; border-radius: 10px;
+      margin: 10px 0 8px; border: 1px solid #6ee7b7;
+    }
+
+    .produk-box {
+      background: #fff0f5; border: 1px dashed #f4a7c0;
+      border-radius: 10px; padding: 8px 12px;
+      font-size: 0.7rem; color: #c2607a; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .produk-box a { color: #c2607a; font-weight: 900; text-decoration: underline; }
+
+    .warning-box {
+      background: #fff8e1; border: 1px solid #fcd34d;
+      border-radius: 10px; padding: 8px 12px;
+      font-size: 0.7rem; color: #92400e; font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .btn-wa {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      background: linear-gradient(135deg, #4ade80, #16a34a);
+      color: white; text-decoration: none;
+      padding: 12px; border-radius: 12px;
+      font-size: 0.8rem; font-weight: 800;
+      box-shadow: 0 4px 14px rgba(74,222,128,0.3);
+    }
+
+    .group-section {
+      background: white; border: 1.5px solid #f4d0dc;
+      border-radius: 20px; padding: 20px;
+      margin: 8px 0 20px; text-align: center;
+      box-shadow: 0 4px 16px rgba(244,114,182,0.1);
+    }
+    .group-section h3 { color: #c2607a; font-size: 0.95rem; margin-bottom: 4px; font-weight: 900; }
+    .group-section p { color: #d4a0b0; font-size: 0.7rem; margin-bottom: 14px; font-weight: 600; }
+    .btn-group {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      background: linear-gradient(135deg, #4ade80, #16a34a);
+      color: white; text-decoration: none;
+      padding: 11px; border-radius: 12px;
+      font-size: 0.78rem; font-weight: 800;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 14px rgba(74,222,128,0.25);
+    }
+    .btn-group:last-child { margin-bottom: 0; }
+    .dot-divider { text-align: center; color: #f4c0d0; letter-spacing: 4px; margin: 2px 0 10px; font-size: 0.9rem; }
+
+    .footer { text-align: center; color: #b07090; font-size: 0.65rem; font-weight: 700; padding: 8px 16px 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="header-icon">💼</span>
+    <h1>Job Riset & Casting</h1>
+    <p>Info loker riset & casting terpercaya</p>
+    <div class="job-count">2 Job Tersedia</div>
+  </div>
+
+  <div class="content">
+
+    <div class="section-label">📋 Job Terbaru</div>
+
+    <!-- JOB 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💥 Riset SkinDerm — Sunscreen</div>
+        <span class="status-badge">🟢 OPEN</span>
+      </div>
+      <div class="divider-line"></div>
+
+      <div class="detail-item"><span class="detail-icon">👧</span><span>Cewek usia <strong>23–28 tahun</strong>, wajah bebas</span></div>
+      <div class="detail-item"><span class="detail-icon">🚫</span><span>Tidak ikut riset skincare wajah minimal <strong>3 bulan terakhir</strong></span></div>
+      <div class="detail-item"><span class="detail-icon">📅</span><span>2 Sep · 9 Sep · 16 Sep — <strong>Jam 07.00 pagi</strong></span></div>
+      <div class="detail-item"><span class="detail-icon">📍</span><span>Ulujami, <strong>Jakarta Selatan</strong></span></div>
+
+      <div class="fee-badge">💸 Fee: <strong>Japri</strong></div>
+
+      <div class="produk-box">🛍️ Cek <a href="https://s.shopee.co.id/4VazSNA4oT" target="_blank">produk terkait</a> — klik untuk lihat & support grup ini ya!</div>
+
+      <div class="warning-box">⚠️ Dicari yang serius ikut sampai selesai, no cancel mendadak ya!</div>
+
+      <a class="btn-wa" href="https://wa.me/6289625086220" target="_blank">📲 Minat? Chat CP di sini</a>
+    </div>
+
+    <!-- JOB 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🍬 Riset Vitamin Gummy Ibu & Anak</div>
+        <span class="status-badge">🟢 OPEN</span>
+      </div>
+      <div class="divider-line"></div>
+
+      <div class="detail-item"><span class="detail-icon">👩</span><span>Wanita menikah usia <strong>25–40 tahun</strong></span></div>
+      <div class="detail-item"><span class="detail-icon">👶</span><span>Punya anak laki-laki & perempuan usia <strong>6–8 tahun</strong> atau <strong>9–10 tahun</strong></span></div>
+      <div class="detail-item"><span class="detail-icon">🪪</span><span>KTP <strong>Jabodetabek</strong></span></div>
+      <div class="detail-item"><span class="detail-icon">📅</span><span>Senin, <strong>31 Agustus 2026</strong> — Jam 10.00 pagi (on time)</span></div>
+      <div class="detail-item"><span class="detail-icon">📍</span><span><strong>Griya Prapanca</strong></span></div>
+      <div class="detail-item"><span class="detail-icon">🚫</span><span>Database 6 bulan riset <strong>PT KDC</strong></span></div>
+
+      <div class="fee-badge">💸 Fee: <strong>Rp120.000 cash</strong></div>
+
+      <div class="produk-box">🛍️ Cek <a href="https://s.shopee.co.id/4VazSNA4oT" target="_blank">produk terkait</a> — klik untuk lihat & support grup ini ya!</div>
+
+      <a class="btn-wa" href="https://wa.me/6285810770103" target="_blank">📲 Minat? Chat CP di sini</a>
+    </div>
+
+    <!-- GROUP SECTION -->
+    <div class="group-section">
+      <div style="font-size:1.8rem;margin-bottom:6px">🌸</div>
+      <h3>Gabung Grup Kami</h3>
+      <p>Dapat info loker lebih cepat & lebih banyak!</p>
+      <a class="btn-group" href="https://chat.whatsapp.com/GJfcgo4T13VJLD75aGNnE5" target="_blank">💼 Grup Riset & Casting</a>
+      <div class="dot-divider">· · ·</div>
+      <a class="btn-group" href="https://whatsapp.com/channel/0029Vb83w401XquaB19NwG0f" target="_blank">🎁 Channel Free Produk</a>
+    </div>
+
+  </div>
+
+  <div class="footer">© 2025 Job Riset & Casting · Info loker terpercaya 🌸</div>
+
+</body>
+</html>
