@@ -1,0 +1,32 @@
+if (sha) body.sha = sha;
+
+      const res = await fetch(api, { method: 'PUT', headers, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 404) throw new Error('Repo tidak ditemukan, atau token belum punya izin ke repo ini. Cek username, nama repo, dan izin token.');
+        if (res.status === 403) throw new Error('Token tidak punya izin menulis. Pastikan izin Contents = Read and write.');
+        throw new Error(err.message || 'Upload gagal (kode ' + res.status + ').');
+      }
+
+      const isRoot = cfg.repo.toLowerCase() === (cfg.user + '.github.io').toLowerCase();
+      const link = 'https://' + cfg.user + '.github.io/' + (isRoot ? '' : cfg.repo + '/') + name;
+      showStatus('ok', '✅ Berhasil diupload!<br><br>Link (aktif 1-2 menit lagi):<br><a href="' + link + '" target="_blank">' + link + '</a><br><br><button class="btn-outline" onclick="copyText(\'' + link + '\')">📋 Copy link</button>');
+    } catch (e) {
+      showStatus('err', 'Gagal: ' + e.message);
+    }
+    btn.disabled = false;
+    btn.textContent = '🚀 Upload ke GitHub';
+  }
+
+  function copyText(t) {
+    navigator.clipboard.writeText(t).then(() => alert('Link tersalin!')).catch(() => prompt('Copy link ini:', t));
+  }
+
+  function copyCode() {
+    const html = buildHTML();
+    navigator.clipboard.writeText(html).then(() => alert('Kode HTML tersalin!')).catch(() => prompt('Copy kode ini:', html));
+  }
+</script>
+
+</body>
+</html>
