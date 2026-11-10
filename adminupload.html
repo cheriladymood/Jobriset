@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <title>Admin – Auto Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: rgb(228,185,211); font-family: 'Nunito', Arial, sans-serif; min-height: 100vh; }
+    .header { background: linear-gradient(135deg, #f4a7c0, #e87fa5); text-align: center; padding: 22px 16px; border-bottom: 2px solid #e87fa5; }
+    .header h1 { color: white; font-size: 1.3rem; font-weight: 900; }
+    .header p { color: white; font-size: 0.75rem; opacity: 0.9; margin-top: 4px; }
+    .content { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+    .card { background: white; border: 1.5px solid #f4d0dc; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+    .card-title { font-size: 0.95rem; font-weight: 800; color: #c2607a; margin-bottom: 12px; }
+    textarea { width: 100%; padding: 12px 14px; border: 1.5px solid #f4d0dc; border-radius: 12px; font-size: 0.78rem; font-family: inherit; outline: none; color: #5a3d48; resize: vertical; min-height: 200px; line-height: 1.7; }
+    textarea:focus, input:focus { border-color: #f4a7c0; }
+    input { width: 100%; padding: 10px 14px; border: 1.5px solid #f4d0dc; border-radius: 10px; font-size: 0.8rem; font-family: inherit; outline: none; margin-bottom: 8px; color: #5a3d48; }
+    label { display: block; font-size: 0.68rem; font-weight: 800; color: #d4a0b0; margin: 8px 0 4px; }
+    .btn-pink, .btn-green, .btn-outline { display: block; padding: 13px; border-radius: 10px; font-size: 0.82rem; font-weight: 800; text-align: center; border: none; cursor: pointer; width: 100%; margin-top: 10px; font-family: inherit; text-decoration: none; }
+    .btn-pink { background: #f4a7c0; color: white; }
+    .btn-green { background: #78c478; color: white; }
+    .btn-outline { background: white; color: #c2607a; border: 1.5px solid #f4a7c0; }
+    .btn-green:disabled { opacity: 0.6; }
+    .badge { display: inline-block; font-size: 0.62rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+    .badge.auto { background: #d1fae5; color: #065f46; }
+    .badge.manual { background: #fef3c7; color: #92400e; }
+    .note { font-size: 0.7rem; color: #888; font-weight: 700; line-height: 1.6; margin-top: 8px; }
+    .result { background: #f0fff0; border: 1.5px solid #78c478; border-radius: 12px; padding: 14px; font-size: 0.78rem; font-weight: 700; color: #2d6a2d; line-height: 1.7; word-break: break-all; }
+    .error { background: #fff0f0; border: 1.5px solid #f0a0a0; border-radius: 12px; padding: 14px; font-size: 0.78rem; font-weight: 700; color: #a02d2d; line-height: 1.7; }
+    details summary { cursor: pointer; font-size: 0.95rem; font-weight: 800; color: #c2607a; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Admin – Auto Upload</h1>
+  <p>Paste teks WA, cek hasilnya, langsung upload ke GitHub</p>
+</div>
+
+<div class="content">
+
+  <div class="card">
+    <details id="settings">
+      <summary>⚙️ Pengaturan GitHub (isi sekali saja)</summary>
+      <label>Username GitHub</label>
+      <input id="cfg-user" placeholder="cheriladymood" autocapitalize="off" autocomplete="off">
+      <label>Nama repo</label>
+      <input id="cfg-repo" placeholder="Jobriset" autocapitalize="off" autocomplete="off">
+      <label>Token (Personal Access Token)</label>
+      <input id="cfg-token" type="password" placeholder="github_pat_..." autocomplete="off">
+      <button class="btn-outline" onclick="saveCfg()">Simpan pengaturan</button>
+      <p class="note">Token cuma tersimpan di browser HP ini, tidak ikut masuk ke file HTML.</p>
+    </details>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Paste teks job dari WA</div>
+    <textarea id="rawText" placeholder="Paste teks broadcast job di sini..."></textarea>
+    <label>Link Shopee affiliate (kosongkan kalau tidak pakai)</label>
+    <input id="affLink" placeholder="https://s.shopee.co.id/...">
+    <label>Link form daftar (kosongkan kalau pakai chat WA)</label>
+    <input id="formLink" placeholder="https://forms.gle/...">
+    <button class="btn-pink" onclick="parseJob()">🔍 Deteksi otomatis</button>
+  </div>
+
+  <div class="card" id="previewCard" style="display:none">
+    <div class="card-title">✅ Cek dan edit hasilnya</div>
+    <label>Judul <span id="b-title"></span></label>
+    <input id="r-title">
+    <label>Deskripsi</label>
+    <textarea id="r-desc" style="min-height:130px"></textarea>
+    <label>Fee <span id="b-fee"></span></label>
+    <input id="r-fee">
+    <label>Nomor CP <span id="b-cp"></span></label>
+    <input id="r-cp" placeholder="628xxx...">
+    <label>Nama file</label>
+    <input id="fileName" autocapitalize="off">
+    <button class="btn-green" id="uploadBtn" onclick="uploadGitHub()">🚀 Upload ke GitHub</button>
+    <button class="btn-outline" onclick="copyCode()">📋 Copy kode HTML (cadangan)</button>
+  </div>
+
+  <div id="status" style="display:none"></div>
+
+</div>
+
+<script>
+  const LS_KEY = 'gh_admin_cfg';
+
+  function getCfg() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (e) { return {}; }
+  }
+  function saveCfg() {
+    const cfg = {
+      user: document.getElementById('cfg-user').value.trim(),
+      repo: document.getElementById('cfg-repo').value.trim(),
+      token: document.getElementById('cfg-token').value.trim()
+    };
+    try { localStorage.setItem(LS_KEY, JSON.stringify(cfg)); } catch (e) {}
+    showStatus('ok', 'Pengaturan tersimpan.');
+    document.getElementById('settings').open = false;
+  }
+  (function initCfg() {
+    const c = getCfg();
+    document.getElementById('cfg-user').value = c.user || '';
+    document.getElementById('cfg-repo').value = c.repo || '';
+    document.getElementById('cfg-token').value = c.token || '';
+    if (!c.user || !c.repo || !c.token) document.getElementById('settings').open = true;
+  })();
+
+  function showStatus(type, html) {
+    const el = document.getElementById('status');
+    el.className = type === 'ok' ? 'result' : 'error';
+    el.innerHTML = html;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function badge(ok) {
+    return ok ? '<span class="badge auto">auto</span>' : '<span class="badge manual">isi manual</span>';
+  }
+
+  function parseJob() {
+    const raw = document.getElementById('rawText').value.trim();
+    if (!raw) return;
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+
+    let cp = '', cpOk = false;
+    for (const l of lines) {
+      const m = l.match(/(?:\+?62|0)8[\d\s\-]{8,13}/);
+      if (m) {
+        cp = m[0].replace(/[\s\-+]/g, '');
+        if (cp.startsWith('08')) cp = '62' + cp.slice(1);
+        cpOk = true;
+        break;
+      }
+    }
+
+    let fee = '', feeOk = false;
+    const feeLine = lines.find(l => /fee|honor|bayaran|💸|kompensasi/i.test(l));
+    if (feeLine) {
+      const m = feeLine.match(/(?:rp\.?\s*)?[\d.,]+\s*(?:rb|ribu|k|juta)?|japri/i);
+      if (m) { fee = m[0].trim(); feeOk = true; }
+    }
+
+    let title = '';
+    for (const l of lines) {
+      const clean = l.replace(/[^\p{L}\p{N}\s().,&\-]/gu, '').replace(/\*/g, '').trim();
+      if (clean.length > 5 && !/^(wa|whatsapp|chat|minat|japri|hubungi|fee|honor|https?)/i.test(clean)) {
+        title = clean;
+        break;
+      }
+    }
+
+    const phoneRe = /(?:\+?62|0)8[\d\s\-]{8,13}/;
+    const skipRe = /📲|whatsapp|minat|japri|hubungi|fast.?respo|https?:\/\//i;
+    const desc = lines.filter(l => !phoneRe.test(l) && !skipRe.test(l)).join('\n');
+
+    document.getElementById('r-title').value = title;
+    document.getElementById('r-desc').value = desc;
+    document.getElementById('r-fee').value = fee;
+    document.getElementById('r-cp').value = cp;
+    document.getElementById('b-title').innerHTML = badge(!!title);
+    document.getElementById('b-fee').innerHTML = badge(feeOk);
+    document.getElementById('b-cp').innerHTML = badge(cpOk);
+    document.getElementById('fileName').value = makeFileName(title);
+
+    document.getElementById('previewCard').style.display = 'block';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('previewCard').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function makeFileName(title) {
+    const slug = (title || 'job').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'job';
+    const d = new Date();
+    const stamp = String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '-' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+    return slug + '-' + stamp + '.html';
+  }
+
+  function buildHTML() {
+    const title = esc(document.getElementById('r-title').value || 'Job Riset & Casting');
+    const desc = esc(document.getElementById('r-desc').value || '');
+    const fee = esc(document.getElementById('r-fee').value || '');
+    const cp = document.getElementById('r-cp').value.replace(/[^0-9]/g, '');
+    const aff = document.getElementById('affLink').value.trim();
+    const form = document.getElementById('formLink').value.trim();
+    const hasGate = aff !== '';
+
+    const gateCSS = hasGate ? `
+    .gate { position: fixed; inset: 0; background: rgba(255,220,235,0.97); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+    .gate-box { background: white; border: 2px solid #f4a7c0; border-radius: 20px; padding: 28px 22px; max-width: 360px; width: 100%; text-align: center; }
+    .gate-box h2 { color: #c2607a; font-size: 1.1rem; margin-bottom: 8px; }
+    .gate-box p { color: #888; font-size: 0.75rem; line-height: 1.7; margin-bottom: 12px; }
+    .btn-unlock { display: none; width: 100%; background: #78c478; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .timer-text { font-size: 0.68rem; color: #bbb; margin-top: 8px; }` : '';
+
+    const gateHTML = hasGate ? `
+  <div class="gate" id="gate">
+    <div class="gate-box">
+      <div>🌸</div>
+      <h2>Hai, Selamat Datang!</h2>
+      <p>Sebelum lihat info loker, klik link produk di bawah dulu ya!</p>
+      <a class="btn-brand" href="${esc(aff)}" target="_blank" id="shopeeBtn">🛍️ Cek Produk Terkait</a>
+      <button class="btn-unlock" id="unlockBtn" onclick="unlockContent()">✅ Sudah Cek — Lihat Loker!</button>
+      <p class="timer-text" id="timerText">Klik link di atas dulu ya 👆</p>
+    </div>
+  </div>` : '';
+
+    const gateJS = hasGate ? `
+    let clicked=false,timerDone=false,timerStarted=false;
+    document.getElementById('shopeeBtn').addEventListener('click',function(){if(!timerDone)clicked=true;});
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='visible'&&clicked&&!timerStarted&&!timerDone){
+        timerStarted=true;let sisa=5;
+        const tt=document.getElementById('timerText'),ub=document.getElementById('unlockBtn');
+        tt.textContent='Tunggu '+sisa+' detik...';
+        const iv=setInterval(()=>{sisa--;if(sisa<=0){clearInterval(iv);timerDone=true;ub.style.display='block';tt.textContent='✅ Yeay bisa akses!';}else{tt.textContent='Tunggu '+sisa+' detik...';}},1000);
+      }
+    });
+    function unlockContent(){document.getElementById('gate').style.display='none';}` : '';
+
+    const affBox = aff ? `<div class="produk-box">🛍️ Cek <a href="${esc(aff)}" target="_blank">produk terkait</a> untuk lihat info produk riset & support grup ini ya!</div>` : '';
+    const ctaBtn = form
+      ? `<a class="btn-wa" href="${esc(form)}" target="_blank">📝 Daftar Sekarang</a>`
+      : `<a class="btn-wa" href="https://wa.me/${cp}" target="_blank">📲 Minat? Chat CP di sini</a>`;
+
+    return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <title>${title}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: rgb(228,185,211); font-family: 'Nunito', Arial, sans-serif; min-height: 100vh; }${gateCSS}
+    .header { background: linear-gradient(135deg, #f4a7c0, #e87fa5); text-align: center; padding: 28px 16px 22px; border-bottom: 2px solid #e87fa5; }
+    .header h1 { color: white; font-size: 1.4rem; font-weight: 900; margin: 0; }
+    .header p { color: rgba(255,255,255,0.9); font-size: 0.8rem; margin-top: 5px; }
+    .content { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 32px; }
+    .card { background: white; border: 1.5px solid #f4d0dc; border-radius: 20px; padding: 20px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(244,114,182,0.1); }
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; background: #d1fae5; color: #065f46; font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; border: 1px solid #6ee7b7; }
+    .card-title { font-size: 1rem; font-weight: 900; color: #c2607a; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1.5px dashed #f4d0dc; }
+    .desc-box { background: #fff9fb; border: 1px solid #f4d0dc; border-radius: 12px; padding: 12px 14px; margin: 12px 0; font-size: 0.75rem; color: #5a3d48; font-weight: 600; line-height: 1.8; white-space: pre-line; }
+    .fee-badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg,#d1fae5,#a7f3d0); color: #065f46; font-size: 0.85rem; font-weight: 900; padding: 7px 14px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #6ee7b7; }
+    .produk-box { background: #fff0f5; border: 1px dashed #f4a7c0; border-radius: 10px; padding: 9px 12px; font-size: 0.72rem; color: #c2607a; font-weight: 700; margin-bottom: 10px; }
+    .produk-box a { color: #c2607a; font-weight: 900; text-decoration: underline; }
+    .btn-brand { display: block; background: #f4a7c0; color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-size: 0.78rem; font-weight: 800; text-align: center; margin-bottom: 10px; }
+    .btn-wa { display: flex; align-items: center; justify-content: center; gap: 7px; background: linear-gradient(135deg,#4ade80,#16a34a); color: white; text-decoration: none; padding: 13px; border-radius: 12px; font-size: 0.82rem; font-weight: 800; box-shadow: 0 4px 14px rgba(74,222,128,0.3); }
+    .group-section { background: white; border: 1.5px solid #f4d0dc; border-radius: 20px; padding: 20px; margin: 8px 0 20px; text-align: center; box-shadow: 0 4px 16px rgba(244,114,182,0.1); }
+    .group-section h3 { color: #c2607a; font-size: 0.95rem; margin-bottom: 4px; font-weight: 900; }
+    .group-section p { color: #d4a0b0; font-size: 0.7rem; margin-bottom: 14px; }
+    .btn-group { display: flex; align-items: center; justify-content: center; gap: 7px; background: linear-gradient(135deg,#4ade80,#16a34a); color: white; text-decoration: none; padding: 11px; border-radius: 12px; font-size: 0.78rem; font-weight: 800; margin-bottom: 10px; }
+    .btn-group:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+${gateHTML}
+  <div class="header">
+    <h1>💼 Job Riset & Casting</h1>
+    <p>Info loker riset & casting terpercaya</p>
+  </div>
+  <div class="content">
+    <div class="card">
+      <span class="status-badge">🟢 OPEN</span>
+      <div class="card-title">📢 ${title}</div>
+      ${affBox}
+      <div class="desc-box">${desc}</div>
+      ${fee ? `<div class="fee-badge">💸 Fee: <strong>${fee}</strong></div>` : ''}
+      ${ctaBtn}
+    </div>
+    <div class="group-section">
+      <div style="font-size:1.8rem;margin-bottom:6px">🌸</div>
+      <h3>Gabung Grup Kami</h3>
+      <p>Dapat info loker lebih cepat & lebih banyak!</p>
+      <a class="btn-group" href="https://chat.whatsapp.com/GJfcgo4T13VJLD75aGNnE5" target="_blank">💼 Grup Riset & Casting</a>
+      <a class="btn-group" href="https://whatsapp.com/channel/0029Vb83w401XquaB19NwG0f" target="_blank">🎁 Channel Free Produk</a>
+    </div>
+  </div>
+  <script>${gateJS}<\/script>
+</body>
+</html>`;
+  }
+
+  function toBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin);
+  }
+
+  async function uploadGitHub() {
+    const cfg = getCfg();
+    if (!cfg.user || !cfg.repo || !cfg.token) {
+      document.getElementById('settings').open = true;
+      document.getElementById('settings').scrollIntoView({ behavior: 'smooth' });
+      showStatus('err', 'Isi dulu Pengaturan GitHub di bagian atas (username, repo, token), lalu tap Simpan.');
+      return;
+    }
+    let name = document.getElementById('fileName').value.trim() || makeFileName('job');
+    if (!/\.html$/i.test(name)) name += '.html';
+
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = true;
+    btn.textContent = 'Mengupload...';
+
+    const api = `https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${encodeURIComponent(name)}`;
+    const headers = {
+      'Authorization': 'Bearer ' + cfg.token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+
+    try {
+      let sha;
+      const check = await fetch(api, { headers });
+      if (check.ok) {
+        const existing = await check.json();
+        sha = existing.sha;
+        if (!confirm('File ' + name + ' sudah ada. Timpa dengan yang baru?')) {
+          btn.disabled = false;
+          btn.textContent = '🚀 Upload ke GitHub';
+          return;
+        }
+      } else if (check.status === 401) {
+        throw new Error('Token ditolak. Cek lagi tokennya di Pengaturan GitHub.');
+      }
+
+      const body = { message: 'Add job page ' + name, content: toBase64(buildHTML()) };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(api, { method: 'PUT', headers, body: JSON.stringify(body) });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 404) throw new Error('Repo tidak ditemukan, atau token belum punya izin ke repo ini. Cek username, nama repo, dan izin token.');
+        if (res.status === 403) throw new Error('Token tidak punya izin menulis. Pastikan izin Contents = Read and write.');
+        throw new Error(err.message || 'Upload gagal (kode ' + res.status + ').');
+      }
+
+      const isRoot = cfg.repo.toLowerCase() === (cfg.user + '.github.io').toLowerCase();
+      const link = 'https://' + cfg.user + '.github.io/' + (isRoot ? '' : cfg.repo + '/') + name;
+      showStatus('ok', '✅ Berhasil diupload!<br><br>Link (aktif 1-2 menit lagi):<br><a href="' + link + '" target="_blank">' + link + '</a><br><br><button class="btn-outline" onclick="copyText(\'' + link + '\')">📋 Copy link</button>');
+    } catch (e) {
+      showStatus('err', 'Gagal: ' + e.message);
+    }
+    btn.disabled = false;
+    btn.textContent = '🚀 Upload ke GitHub';
+  }
+
+  function copyText(t) {
+    navigator.clipboard.writeText(t).then(() => alert('Link tersalin!')).catch(() => prompt('Copy link ini:', t));
+  }
+
+  function copyCode() {
+    const html = buildHTML();
+    navigator.clipboard.writeText(html).then(() => alert('Kode HTML tersalin!')).catch(() => prompt('Copy kode ini:', html));
+  }
+</script>
+
+</body>
+</html>
